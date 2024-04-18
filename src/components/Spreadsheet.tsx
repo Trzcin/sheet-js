@@ -1,14 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import CellMap from "../CellMap";
 
 interface SpreadsheetProps {
     width: number;
     height: number;
+    initialData?: CellMap;
 }
 
 export default function Spreadsheet(props: SpreadsheetProps) {
     const columnNames = useMemo(() => (
         Array.from({length: props.width}, (_, i) => columnName(i))
     ), [props.width]);
+    const [data] = useState<CellMap>(props.initialData ?? new CellMap());
 
     return <table>
         <thead>
@@ -24,7 +27,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 <tr key={row}>
                     <td>{row+1}</td>
                     {Array.from({ length: props.width }, (_, col) => (
-                        <td key={col}></td>
+                        <td key={col}>{data.get({x: col, y: row})}</td>
                     ))}
                 </tr>
             ))}
