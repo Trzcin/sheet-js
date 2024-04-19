@@ -13,6 +13,10 @@ table {
     border-spacing: 0;
 }
 
+table:focus {
+    outline: none;
+}
+
 tr > td:first-child, tr > th:first-child {
     min-width: 50px;
     text-align: center;
@@ -30,4 +34,13 @@ th, td {
     height: 25px;
     border: 1px solid #aaa;
     padding: 0 5px;
+    user-select: none;
+}
+
+.selected {
+    background-color: greenyellow;
+}
+
+.selected-label {
+    background-color: greenyellow !important;
 }

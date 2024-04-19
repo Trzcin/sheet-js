@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import CellMap from "../CellMap";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import CellMap from '../CellMap';
+import { CellPosition, CellSelection } from '../types';
+import { useModifierKeys } from '../hooks/useModifierKeys';
 
 interface SpreadsheetProps {
     width: number;
@@ -8,35 +10,140 @@ interface SpreadsheetProps {
 }
 
 export default function Spreadsheet(props: SpreadsheetProps) {
-    const columnNames = useMemo(() => (
-        Array.from({length: props.width}, (_, i) => columnName(i))
-    ), [props.width]);
+    const columnNames = useMemo(
+        () => Array.from({ length: props.width }, (_, i) => columnName(i)),
+        [props.width],
+    );
     const [data] = useState<CellMap>(props.initialData ?? new CellMap());
+    const [selection, setSelection] = useState<CellSelection | undefined>(
+        undefined,
+    );
+    const modKeys = useModifierKeys();
+    const table = useRef<HTMLTableElement>(null);
 
-    return <table>
-        <thead>
-            <tr>
-                <th></th>
-                {columnNames.map((name, i) => (
-                    <th key={i}>{name}</th>
-                ))}
-            </tr>
-        </thead>
-        <tbody>
-            {Array.from({ length: props.height }, (_, row) => (
-                <tr key={row}>
-                    <td>{row+1}</td>
-                    {Array.from({ length: props.width }, (_, col) => (
-                        <td key={col}>{data.get({x: col, y: row})}</td>
+    useEffect(() => {
+        if (selection !== undefined && table.current) {
+            table.current.focus();
+        } else if (selection === undefined && table.current) {
+            table.current.blur();
+        }
+    }, [selection]);
+
+    function handleClick(position: CellPosition) {
+        if (selection && inSelection(position, selection)) {
+            setSelection(undefined);
+        } else if (selection && modKeys.shift) {
+            setSelection((prev) => {
+                return {
+                    start: {
+                        x: Math.min(prev!.start.x, position.x),
+                        y: Math.min(prev!.start.y, position.y),
+                    },
+                    end: {
+                        x: Math.max(prev!.end.x, position.x),
+                        y: Math.max(prev!.end.y, position.y),
+                    },
+                };
+            });
+        } else {
+            setSelection({
+                start: position,
+                end: position,
+            });
+        }
+    }
+
+    function deselect(ev: React.KeyboardEvent) {
+        if (ev.key !== 'Escape') {
+            return;
+        }
+        setSelection(undefined);
+    }
+
+    function arrowKeyMove(ev: React.KeyboardEvent) {
+        if (
+            selection === undefined ||
+            (ev.key !== 'ArrowUp' &&
+                ev.key !== 'ArrowDown' &&
+                ev.key !== 'ArrowLeft' &&
+                ev.key !== 'ArrowRight')
+        ) {
+            return;
+        }
+        ev.preventDefault();
+
+        switch (ev.key) {
+            case 'ArrowUp':
+                if (selection.end.y - 1 >= 0) {
+                    handleClick({ ...selection.end, y: selection.end.y - 1 });
+                }
+                break;
+            case 'ArrowDown':
+                if (selection.end.y + 1 < props.height) {
+                    handleClick({ ...selection.end, y: selection.end.y + 1 });
+                }
+                break;
+            case 'ArrowLeft':
+                if (selection.end.x - 1 >= 0) {
+                    handleClick({ ...selection.end, x: selection.end.x - 1 });
+                }
+                break;
+            case 'ArrowRight':
+                if (selection.end.x + 1 < props.width) {
+                    handleClick({ ...selection.end, x: selection.end.x + 1 });
+                }
+                break;
+        }
+    }
+
+    return (
+        <table
+            tabIndex={0}
+            ref={table}
+            onKeyDown={(ev) => {
+                arrowKeyMove(ev);
+                deselect(ev);
+            }}
+        >
+            <thead>
+                <tr>
+                    <th></th>
+                    {columnNames.map((name, i) => (
+                        <th
+                            key={i}
+                            className={`${selection && i >= selection.start.x && i <= selection.end.x && 'selected-label'}`}
+                        >
+                            {name}
+                        </th>
                     ))}
                 </tr>
-            ))}
-        </tbody>
-    </table>;
+            </thead>
+            <tbody>
+                {Array.from({ length: props.height }, (_, row) => (
+                    <tr key={row}>
+                        <td
+                            className={`${selection && row >= selection.start.y && row <= selection.end.y && 'selected-label'}`}
+                        >
+                            {row + 1}
+                        </td>
+                        {Array.from({ length: props.width }, (_, col) => (
+                            <td
+                                onClick={() => handleClick({ x: col, y: row })}
+                                key={col}
+                                className={`${selection && inSelection({ x: col, y: row }, selection) && 'selected'}`}
+                            >
+                                {data.get({ x: col, y: row })}
+                            </td>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
 }
 
 function columnName(index: number): string {
-    let name = "";
+    let name = '';
     let currNum = index + 1;
 
     while (currNum > 0) {
@@ -49,6 +156,18 @@ function columnName(index: number): string {
             currNum = Math.floor(currNum / 26);
         }
     }
-    
+
     return name;
+}
+
+function inSelection(
+    position: CellPosition,
+    selection: CellSelection,
+): boolean {
+    return (
+        position.x >= selection.start.x &&
+        position.x <= selection.end.x &&
+        position.y >= selection.start.y &&
+        position.y <= selection.end.y
+    );
 }

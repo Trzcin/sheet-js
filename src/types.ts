@@ -5,3 +5,8 @@ export interface CellPosition {
 }
 
 export type CellData = number | string;
+
+export interface CellSelection {
+    start: CellPosition;
+    end: CellPosition;
+}
