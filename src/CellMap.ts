@@ -18,4 +18,8 @@ export default class CellMap {
     public get(position: CellPosition): CellData | undefined {
         return this.map.get(JSON.stringify(position));
     }
+    
+    public delete(position: CellPosition) {
+        this.map.delete(JSON.stringify(position));
+    }
 }

@@ -73,6 +73,20 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         setSelection(undefined);
     }
 
+    function deleteCells(ev: React.KeyboardEvent) {
+        if (selection === undefined || ev.key !== 'Delete') {
+            return;
+        }
+
+        const updatedData = data;
+        for (let y = selection.start.y; y <= selection.end.y; y++) {
+            for (let x = selection.start.x; x <= selection.end.x; x++) {
+                updatedData.delete({ x, y });
+            }
+        }
+        setData(updatedData);
+    }
+
     function arrowKeyMove(ev: React.KeyboardEvent) {
         if (
             selection === undefined ||
@@ -131,6 +145,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             onKeyDown={(ev) => {
                 arrowKeyMove(ev);
                 deselect(ev);
+                deleteCells(ev);
             }}
             onBlur={() => setSelection(undefined)}
         >
