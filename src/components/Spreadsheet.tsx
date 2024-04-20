@@ -26,6 +26,9 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         undefined,
     );
     const [cellValue, setCellValue] = useState('');
+    const [copiedArea, setCopiedArea] = useState<CellSelection | undefined>(
+        undefined,
+    );
 
     useEffect(() => {
         if (selection !== undefined && table.current) {
@@ -138,6 +141,31 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         setCellValue('');
     }
 
+    function handleCopy(ev: React.KeyboardEvent) {
+        if (!selection || !ev.ctrlKey || ev.key !== 'c') return;
+
+        setCopiedArea({
+            start: { ...selection.start },
+            end: { ...selection.end },
+        });
+    }
+
+    function handlePaste(ev: React.KeyboardEvent) {
+        if (!selection || !copiedArea || !ev.ctrlKey || ev.key !== 'v') return;
+
+        const updatedData = data;
+        for (let y = copiedArea.start.y; y <= copiedArea.end.y; y++) {
+            for (let x = copiedArea.start.x; x <= copiedArea.end.x; x++) {
+                const pos: CellPosition = {
+                    x: selection.start.x + x - copiedArea.start.x,
+                    y: selection.start.y + y - copiedArea.start.y,
+                };
+                updatedData.set(pos, updatedData.get({ x, y })!);
+            }
+        }
+        setData(updatedData);
+    }
+
     return (
         <table
             tabIndex={0}
@@ -146,6 +174,8 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 arrowKeyMove(ev);
                 deselect(ev);
                 deleteCells(ev);
+                handleCopy(ev);
+                handlePaste(ev);
             }}
             onBlur={() => setSelection(undefined)}
         >
