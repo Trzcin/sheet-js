@@ -14,12 +14,18 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         () => Array.from({ length: props.width }, (_, i) => columnName(i)),
         [props.width],
     );
-    const [data] = useState<CellMap>(props.initialData ?? new CellMap());
+    const [data, setData] = useState<CellMap>(
+        props.initialData ?? new CellMap(),
+    );
     const [selection, setSelection] = useState<CellSelection | undefined>(
         undefined,
     );
     const modKeys = useModifierKeys();
     const table = useRef<HTMLTableElement>(null);
+    const [editingPos, setEditingPos] = useState<CellPosition | undefined>(
+        undefined,
+    );
+    const [cellValue, setCellValue] = useState('');
 
     useEffect(() => {
         if (selection !== undefined && table.current) {
@@ -32,6 +38,13 @@ export default function Spreadsheet(props: SpreadsheetProps) {
     function handleClick(position: CellPosition) {
         if (selection && inSelection(position, selection)) {
             setSelection(undefined);
+            setEditingPos(position);
+            const cellData = data.get(position);
+            if (typeof cellData === 'string') {
+                setCellValue(cellData);
+            } else if (typeof cellData === 'number') {
+                setCellValue(cellData.toString());
+            }
         } else if (selection && modKeys.shift) {
             setSelection((prev) => {
                 return {
@@ -96,6 +109,21 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         }
     }
 
+    function updateCell() {
+        if (!editingPos) return;
+
+        if (cellValue.trim() !== '') {
+            const valueNum = parseFloat(cellValue.trim().replace(',', '.'));
+            if (!isNaN(valueNum)) {
+                setData((prev) => prev.set(editingPos, valueNum));
+            } else {
+                setData((prev) => prev.set(editingPos, cellValue));
+            }
+        }
+        setEditingPos(undefined);
+        setCellValue('');
+    }
+
     return (
         <table
             tabIndex={0}
@@ -104,6 +132,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 arrowKeyMove(ev);
                 deselect(ev);
             }}
+            onBlur={() => setSelection(undefined)}
         >
             <thead>
                 <tr>
@@ -132,7 +161,20 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                                 key={col}
                                 className={`${selection && inSelection({ x: col, y: row }, selection) && 'selected'}`}
                             >
-                                {data.get({ x: col, y: row })}
+                                {editingPos &&
+                                editingPos.x === col &&
+                                editingPos.y === row ? (
+                                    <input
+                                        value={cellValue}
+                                        onInput={(ev) =>
+                                            setCellValue(ev.currentTarget.value)
+                                        }
+                                        onBlur={updateCell}
+                                        autoFocus
+                                    />
+                                ) : (
+                                    data.get({ x: col, y: row })
+                                )}
                             </td>
                         ))}
                     </tr>
