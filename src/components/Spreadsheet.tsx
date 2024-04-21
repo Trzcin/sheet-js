@@ -50,6 +50,8 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 setCellValue(cellData);
             } else if (typeof cellData === 'number') {
                 setCellValue(cellData.toString());
+            } else if (typeof cellData === 'object') {
+                setCellValue(cellData.src);
             }
         } else if (selection && modKeys.shift) {
             setSelection((prev) => {
