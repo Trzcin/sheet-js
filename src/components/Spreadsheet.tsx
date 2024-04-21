@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CellMap from '../CellMap';
 import { CellPosition, CellSelection } from '../types';
 import { useModifierKeys } from '../hooks/useModifierKeys';
+import parseCellData from '../parseCellData';
+import { inSelection } from '../utils';
+import Cell from './Cell';
 
 interface SpreadsheetProps {
     width: number;
@@ -130,12 +133,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         if (!editingPos) return;
 
         if (cellValue.trim() !== '') {
-            const valueNum = parseFloat(cellValue.trim().replace(',', '.'));
-            if (!isNaN(valueNum)) {
-                setData((prev) => prev.set(editingPos, valueNum));
-            } else {
-                setData((prev) => prev.set(editingPos, cellValue));
-            }
+            setData((prev) => prev.set(editingPos, parseCellData(cellValue)));
         }
         setEditingPos(undefined);
         setCellValue('');
@@ -201,26 +199,18 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                             {row + 1}
                         </td>
                         {Array.from({ length: props.width }, (_, col) => (
-                            <td
-                                onClick={() => handleClick({ x: col, y: row })}
+                            <Cell
                                 key={col}
-                                className={`${selection && inSelection({ x: col, y: row }, selection) && 'selected'}`}
-                            >
-                                {editingPos &&
-                                editingPos.x === col &&
-                                editingPos.y === row ? (
-                                    <input
-                                        value={cellValue}
-                                        onInput={(ev) =>
-                                            setCellValue(ev.currentTarget.value)
-                                        }
-                                        onBlur={updateCell}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    data.get({ x: col, y: row })
-                                )}
-                            </td>
+                                row={row}
+                                col={col}
+                                data={data}
+                                cellValue={cellValue}
+                                editingPos={editingPos}
+                                handleClick={handleClick}
+                                selection={selection}
+                                setCellValue={setCellValue}
+                                updateCell={updateCell}
+                            />
                         ))}
                     </tr>
                 ))}
@@ -245,16 +235,4 @@ function columnName(index: number): string {
     }
 
     return name;
-}
-
-function inSelection(
-    position: CellPosition,
-    selection: CellSelection,
-): boolean {
-    return (
-        position.x >= selection.start.x &&
-        position.x <= selection.end.x &&
-        position.y >= selection.start.y &&
-        position.y <= selection.end.y
-    );
 }
