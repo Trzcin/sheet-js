@@ -137,6 +137,13 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         if (cellValue.trim() !== '') {
             setData((prev) => prev.set(editingPos, parseCellData(cellValue)));
         }
+
+        if (cellValue.trim() === '' && data.has(editingPos)) {
+            const newData = data;
+            newData.delete(editingPos);
+            setData(newData);
+        }
+
         setEditingPos(undefined);
         setCellValue('');
     }
