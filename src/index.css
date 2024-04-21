@@ -40,11 +40,11 @@ th, td {
 }
 
 .selected {
-    background-color: greenyellow;
+    background-color: rgba(0, 225, 86, 0.3);
 }
 
 .selected-label {
-    background-color: greenyellow !important;
+    background-color: rgba(0, 225, 86, 1) !important;
 }
 
 input {
