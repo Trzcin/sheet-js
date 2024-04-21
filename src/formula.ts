@@ -26,8 +26,52 @@ const sum: FormulaFunc = (data, area) => {
     return elemSum;
 };
 
+const avg: FormulaFunc = (data, area) => {
+    let elemSum = 0;
+    let count = 0;
+    for (let y = area.start.y; y <= area.end.y; y++) {
+        for (let x = area.start.x; x <= area.end.x; x++) {
+            const cellValue = data.get({ x, y });
+            if (typeof cellValue === 'number') {
+                elemSum += cellValue;
+                count++;
+            }
+        }
+    }
+    return elemSum / count;
+};
+
+const min: FormulaFunc = (data, area) => {
+    let minValue = Infinity;
+    for (let y = area.start.y; y <= area.end.y; y++) {
+        for (let x = area.start.x; x <= area.end.x; x++) {
+            const cellValue = data.get({ x, y });
+            if (typeof cellValue === 'number' && cellValue < minValue) {
+                minValue = cellValue;
+            }
+        }
+    }
+    return minValue;
+};
+
+const max: FormulaFunc = (data, area) => {
+    let maxValue = -Infinity;
+    for (let y = area.start.y; y <= area.end.y; y++) {
+        for (let x = area.start.x; x <= area.end.x; x++) {
+            const cellValue = data.get({ x, y });
+            if (typeof cellValue === 'number' && cellValue > maxValue) {
+                maxValue = cellValue;
+            }
+        }
+    }
+    return maxValue;
+};
+
 export const formulaFuncs = {
     sum,
+    avg,
+    min,
+    max,
 };
 
 export function parseFormula(input: string): Formula {
