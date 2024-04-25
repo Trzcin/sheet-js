@@ -5,9 +5,9 @@ import Spreadsheet from './components/Spreadsheet';
 import CellMap from './CellMap';
 
 const data = new CellMap();
-data.set({x: 1, y: 1}, 0.3);
-data.set({x: 1, y: 2}, 5);
-data.set({x: 1, y: 3}, 2.7);
+data.set({ x: 1, y: 1 }, 0.3);
+data.set({ x: 1, y: 2 }, 5);
+data.set({ x: 1, y: 3 }, 2.7);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
