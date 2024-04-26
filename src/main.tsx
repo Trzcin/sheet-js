@@ -16,6 +16,6 @@ data.set({ x: 2, y: 4 }, 16);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <Spreadsheet width={16} height={20} initialData={data} />
+        <Spreadsheet width={32} height={40} initialData={data} />
     </React.StrictMode>,
 );
