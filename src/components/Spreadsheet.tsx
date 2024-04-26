@@ -249,6 +249,21 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         }
     }
 
+    function updateCellOnEnter(ev: React.KeyboardEvent): boolean {
+        if (!editingPos || ev.key !== 'Enter') {
+            return false;
+        }
+
+        updateCell();
+        const yPos =
+            editingPos.y < props.height - 1 ? editingPos.y + 1 : editingPos.y;
+        setSelection({
+            start: { ...editingPos, y: yPos },
+            end: { ...editingPos, y: yPos },
+        });
+        return true;
+    }
+
     return (
         <table
             tabIndex={0}
@@ -260,6 +275,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 shortcut = shortcut || handleCopy(ev);
                 shortcut = shortcut || handlePaste(ev);
                 shortcut = shortcut || handleAddChart(ev);
+                shortcut = shortcut || updateCellOnEnter(ev);
 
                 if (!shortcut) startEditingSelected(ev);
             }}
