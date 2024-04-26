@@ -147,7 +147,10 @@ export default function Spreadsheet(props: SpreadsheetProps) {
     function updateCell() {
         if (!editingPos) return;
 
-        if (cellValue.trim() !== '') {
+        if (
+            cellValue.trim() !== '' &&
+            cellValue.trim() !== data.get(editingPos)
+        ) {
             setData((prev) => prev.set(editingPos, parseCellData(cellValue)));
         }
 
