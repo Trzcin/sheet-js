@@ -104,7 +104,7 @@ function posStrToCellPosition(pos: string): CellPosition {
 
     for (const ch of pos) {
         if (ch >= '0' && ch <= '9') {
-            row = row * 10 + parseInt(ch) - 1;
+            row = row * 10 + parseInt(ch);
         } else {
             if (first) {
                 col = col * 26 + ch.charCodeAt(0) - 65;
@@ -115,7 +115,7 @@ function posStrToCellPosition(pos: string): CellPosition {
         }
     }
 
-    return { x: col, y: row };
+    return { x: col, y: row - 1 };
 }
 
 export function computeFormula(
