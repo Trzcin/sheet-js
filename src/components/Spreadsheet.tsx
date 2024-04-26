@@ -218,15 +218,19 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             return;
         }
 
+        const cellData = data.get(selection.start);
+        if (typeof cellData === 'object' && 'selection' in cellData) {
+            return;
+        }
+
         setSelection(undefined);
         setEditingPos({ ...selection.start });
-        const cellData = data.get(selection.start);
         if (typeof cellData === 'string') {
-            setCellValue(cellData + ev.key);
+            setCellValue(cellData);
         } else if (typeof cellData === 'number') {
-            setCellValue(cellData.toString() + ev.key);
+            setCellValue(cellData.toString());
         } else if (typeof cellData === 'object' && 'src' in cellData) {
-            setCellValue(cellData.src + ev.key);
+            setCellValue(cellData.src);
         }
     }
 
