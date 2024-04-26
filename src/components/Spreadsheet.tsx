@@ -82,16 +82,17 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         }
     }
 
-    function deselect(ev: React.KeyboardEvent) {
+    function deselect(ev: React.KeyboardEvent): boolean {
         if (ev.key !== 'Escape') {
-            return;
+            return false;
         }
         setSelection(undefined);
+        return true;
     }
 
-    function deleteCells(ev: React.KeyboardEvent) {
+    function deleteCells(ev: React.KeyboardEvent): boolean {
         if (selection === undefined || ev.key !== 'Delete') {
-            return;
+            return false;
         }
 
         const updatedData = data;
@@ -101,9 +102,11 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             }
         }
         setData(updatedData);
+
+        return true;
     }
 
-    function arrowKeyMove(ev: React.KeyboardEvent) {
+    function arrowKeyMove(ev: React.KeyboardEvent): boolean {
         if (
             selection === undefined ||
             (ev.key !== 'ArrowUp' &&
@@ -111,7 +114,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 ev.key !== 'ArrowLeft' &&
                 ev.key !== 'ArrowRight')
         ) {
-            return;
+            return false;
         }
         ev.preventDefault();
 
@@ -137,6 +140,8 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                 }
                 break;
         }
+
+        return true;
     }
 
     function updateCell() {
@@ -156,17 +161,22 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         setCellValue('');
     }
 
-    function handleCopy(ev: React.KeyboardEvent) {
-        if (!selection || !ev.ctrlKey || ev.key !== 'c') return;
+    function handleCopy(ev: React.KeyboardEvent): boolean {
+        if (!selection || !ev.ctrlKey || ev.key !== 'c') {
+            return false;
+        }
 
         setCopiedArea({
             start: { ...selection.start },
             end: { ...selection.end },
         });
+        return true;
     }
 
-    function handlePaste(ev: React.KeyboardEvent) {
-        if (!selection || !copiedArea || !ev.ctrlKey || ev.key !== 'v') return;
+    function handlePaste(ev: React.KeyboardEvent): boolean {
+        if (!selection || !copiedArea || !ev.ctrlKey || ev.key !== 'v') {
+            return false;
+        }
 
         const updatedData = data;
         for (let y = copiedArea.start.y; y <= copiedArea.end.y; y++) {
@@ -179,11 +189,13 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             }
         }
         setData(updatedData);
+
+        return true;
     }
 
-    function handleAddChart(ev: React.KeyboardEvent) {
+    function handleAddChart(ev: React.KeyboardEvent): boolean {
         if (!selection || !ev.ctrlKey || ev.key !== 'g') {
-            return;
+            return false;
         }
         ev.preventDefault();
 
@@ -217,6 +229,24 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             },
         });
         setCharts((prev) => [...prev, { selection, chart }]);
+        return true;
+    }
+
+    function startEditingSelected(ev: React.KeyboardEvent) {
+        if (!selection || ev.shiftKey || ev.ctrlKey) {
+            return;
+        }
+
+        setSelection(undefined);
+        setEditingPos({ ...selection.start });
+        const cellData = data.get(selection.start);
+        if (typeof cellData === 'string') {
+            setCellValue(cellData + ev.key);
+        } else if (typeof cellData === 'number') {
+            setCellValue(cellData.toString() + ev.key);
+        } else if (typeof cellData === 'object') {
+            setCellValue(cellData.src + ev.key);
+        }
     }
 
     return (
@@ -224,12 +254,14 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             tabIndex={0}
             ref={table}
             onKeyDown={(ev) => {
-                arrowKeyMove(ev);
-                deselect(ev);
-                deleteCells(ev);
-                handleCopy(ev);
-                handlePaste(ev);
-                handleAddChart(ev);
+                let shortcut = arrowKeyMove(ev);
+                shortcut = shortcut || deselect(ev);
+                shortcut = shortcut || deleteCells(ev);
+                shortcut = shortcut || handleCopy(ev);
+                shortcut = shortcut || handlePaste(ev);
+                shortcut = shortcut || handleAddChart(ev);
+
+                if (!shortcut) startEditingSelected(ev);
             }}
             onBlur={() => setSelection(undefined)}
         >
