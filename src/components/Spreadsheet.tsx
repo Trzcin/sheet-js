@@ -91,7 +91,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             return false;
         }
 
-        const updatedData = data;
+        const updatedData = new CellMap(data.map);
         for (let y = selection.start.y; y <= selection.end.y; y++) {
             for (let x = selection.start.x; x <= selection.end.x; x++) {
                 updatedData.delete({ x, y });
