@@ -5,8 +5,6 @@ import { useModifierKeys } from '../hooks/useModifierKeys';
 import parseCellData from '../parseCellData';
 import { inSelection } from '../utils';
 import Cell from './Cell';
-import { Chart } from 'chart.js/auto';
-import { ChartData, updateChart } from '../chart';
 
 interface SpreadsheetProps {
     width: number;
@@ -34,7 +32,6 @@ export default function Spreadsheet(props: SpreadsheetProps) {
     const [copiedArea, setCopiedArea] = useState<CellSelection | undefined>(
         undefined,
     );
-    const [charts, setCharts] = useState<ChartData[]>([]);
 
     useEffect(() => {
         if (selection !== undefined && table.current) {
@@ -44,21 +41,20 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         }
     }, [selection]);
 
-    useEffect(() => {
-        console.log('aaa');
-        charts.forEach((c) => updateChart(c, data));
-    }, [charts, data]);
-
     function handleClick(position: CellPosition) {
         if (selection && inSelection(position, selection)) {
+            const cellData = data.get(position);
+            if (typeof cellData === 'object' && 'selection' in cellData) {
+                return;
+            }
+
             setSelection(undefined);
             setEditingPos(position);
-            const cellData = data.get(position);
             if (typeof cellData === 'string') {
                 setCellValue(cellData);
             } else if (typeof cellData === 'number') {
                 setCellValue(cellData.toString());
-            } else if (typeof cellData === 'object') {
+            } else if (typeof cellData === 'object' && 'src' in cellData) {
                 setCellValue(cellData.src);
             }
         } else if (selection && modKeys.shift) {
@@ -202,36 +198,18 @@ export default function Spreadsheet(props: SpreadsheetProps) {
         }
         ev.preventDefault();
 
-        const xValues: number[] = [];
-        for (let row = selection.start.y; row <= selection.end.y; row++) {
-            const cell = data.get({ x: selection.start.x, y: row });
-            if (cell && typeof cell === 'number') {
-                xValues.push(cell);
-            }
-        }
-        const yValues: number[] = [];
-        for (let row = selection.start.y; row <= selection.end.y; row++) {
-            const cell = data.get({ x: selection.end.x, y: row });
-            if (cell && typeof cell === 'number') {
-                yValues.push(cell);
-            }
-        }
-
-        const canv = document.createElement('canvas');
-        canv.style.position = 'absolute';
-        document.body.appendChild(canv);
-        const chart = new Chart(canv, {
-            type: 'line',
-            data: {
-                labels: xValues,
-                datasets: [
-                    {
-                        data: yValues,
+        setData((prev) =>
+            prev.set(
+                { x: selection.end.x + 1, y: selection.start.y },
+                {
+                    selection: {
+                        start: { ...selection.start },
+                        end: { ...selection.end },
                     },
-                ],
-            },
-        });
-        setCharts((prev) => [...prev, { selection, chart }]);
+                },
+            ),
+        );
+
         return true;
     }
 
@@ -247,7 +225,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             setCellValue(cellData + ev.key);
         } else if (typeof cellData === 'number') {
             setCellValue(cellData.toString() + ev.key);
-        } else if (typeof cellData === 'object') {
+        } else if (typeof cellData === 'object' && 'src' in cellData) {
             setCellValue(cellData.src + ev.key);
         }
     }

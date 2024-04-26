@@ -1,7 +1,8 @@
 import CellMap from '../CellMap';
-import { CellPosition, CellSelection } from '../types';
+import { CellData, CellPosition, CellSelection } from '../types';
 import { inSelection } from '../utils';
 import { computeFormula } from '../formula';
+import LineChart from './LineChart';
 
 interface CellProps {
     col: number;
@@ -17,10 +18,13 @@ interface CellProps {
 
 export default function Cell({ data, col, row, ...props }: CellProps) {
     const cellData = data.get({ x: col, y: row });
-    const value =
-        typeof cellData === 'object'
+    let value: CellData | React.ReactNode =
+        typeof cellData === 'object' && 'src' in cellData
             ? computeFormula(cellData, data)
             : cellData;
+    if (typeof value === 'object' && 'selection' in value) {
+        value = <LineChart data={data} selection={value.selection} />;
+    }
 
     return (
         <td

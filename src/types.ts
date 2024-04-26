@@ -6,9 +6,13 @@ export interface CellPosition {
     y: number;
 }
 
-export type CellData = number | string | Formula;
+export type CellData = number | string | Formula | ChartData;
 
 export interface CellSelection {
     start: CellPosition;
     end: CellPosition;
+}
+
+export interface ChartData {
+    selection: CellSelection;
 }

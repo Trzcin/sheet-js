@@ -58,3 +58,11 @@ input {
 input:focus {
     outline: none;
 }
+
+.canvas-container {
+    width: 400px;
+    height: 200px;
+    position: absolute;
+    background-color: white;
+    transform: translate(-5px, -12px);
+}
