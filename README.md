@@ -1,30 +1,49 @@
-# React + TypeScript + Vite
+<p align="center">
+    <img src="./git-assets/icon.svg" alt="sheet-js" style="width: 80px;"/>
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# sheet-js
 
-Currently, two official plugins are available:
+A browser based spreadsheet application, written with React and chart.js. It includes a main `Spreadsheet` React component, where you can specify the size of the spreadsheet and the initial data. Cell data is stored in a sparse structure, allowing for quick and memory efficient storage.
 
--   [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
--   [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![showcase](./git-assets/intro.png)
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+-   Keyboard based navigation
+-   Selecting, copying, pasting and deleting cells
+-   Storing numbers and strings
+-   Formulas calculated based on multiple cells. They autoupdate when corresponding cells update.
+-   Creating charts based on cells. Charts animate to accommodate changes to the data.
 
--   Configure the top-level `parserOptions` property like this:
+![data updates](./git-assets/updates.webp)
 
-```js
-export default {
-    // other rules...
-    parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: ['./tsconfig.json', './tsconfig.node.json'],
-        tsconfigRootDir: __dirname,
-    },
-};
+## Controls
+
+-   `left click` - select a cell, when clicking a selected cell, will begin editing the cell text. Clicking with `shift` pressed will select a range of cells.
+-   `arrow keys` - move the selection around. Moving with `shift` pressed will select cells.
+-   `enter` - when editing a cell, confirms the changes and moves one cell downwards.
+-   `escape` - deselects everything
+-   `delete` - removes data in selected cells
+-   `ctrl+g` - creates a chart based on the selected cells. You need to select two columns. Data from the first column will be used as the x values, and data in the second column will be used as the y values.
+-   `ctrl + c` - copy selected cells.
+-   `ctrl + v` - paste selected cells.
+
+## Formulas
+
+To begin a formula type `=` into a cell. The format for a formula expression is the following:
+
+```
+=funcName(A1:B2)
 ```
 
--   Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
--   Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
--   Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+where `A1` and `B2` are two coordinates specifying the area, and `funcName` is a built-in function.
+
+### Functions
+
+> NOTE: Functions expecting numbers will ignore strings and empty cells.
+
+-   `sum` - sum all numbers in an area.
+-   `avg` - get the arithmetic average of numbers in an area.
+-   `min` - get the smallest number in an area.
+-   `max` - get the largest number in an area.
