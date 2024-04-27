@@ -177,7 +177,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
             return false;
         }
 
-        const updatedData = data;
+        const updatedData = new CellMap(data.map);
         for (let y = copiedArea.start.y; y <= copiedArea.end.y; y++) {
             for (let x = copiedArea.start.x; x <= copiedArea.end.x; x++) {
                 const pos: CellPosition = {
