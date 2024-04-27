@@ -1,5 +1,5 @@
 import CellMap from './CellMap';
-import { CellData, CellPosition, CellSelection } from './types';
+import { CellPosition, CellSelection } from './types';
 
 export interface Formula {
     func: keyof typeof formulaFuncs;
@@ -8,10 +8,7 @@ export interface Formula {
     error?: string;
 }
 
-type FormulaFunc = (
-    data: CellMap,
-    area: CellSelection,
-) => Exclude<CellData, Formula>;
+type FormulaFunc = (data: CellMap, area: CellSelection) => number | string;
 
 const sum: FormulaFunc = (data, area) => {
     let elemSum = 0;
@@ -121,7 +118,7 @@ function posStrToCellPosition(pos: string): CellPosition {
 export function computeFormula(
     formula: Formula,
     data: CellMap,
-): Exclude<CellData, Formula> {
+): number | string {
     if (formula.error) {
         return formula.error;
     }

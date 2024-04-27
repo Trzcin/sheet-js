@@ -1,5 +1,5 @@
 import CellMap from '../CellMap';
-import { CellData, CellPosition, CellSelection } from '../types';
+import { CellPosition, CellSelection } from '../types';
 import { inSelection } from '../utils';
 import { computeFormula } from '../formula';
 import LineChart from './LineChart';
@@ -18,12 +18,29 @@ interface CellProps {
 
 export default function Cell({ data, col, row, ...props }: CellProps) {
     const cellData = data.get({ x: col, y: row });
-    let value: CellData | React.ReactNode =
-        typeof cellData === 'object' && 'src' in cellData
-            ? computeFormula(cellData, data)
-            : cellData;
-    if (typeof value === 'object' && 'selection' in value) {
-        value = <LineChart data={data} selection={value.selection} />;
+    let value: string | number | undefined | React.ReactNode;
+
+    if (
+        props.editingPos &&
+        props.editingPos.x === col &&
+        props.editingPos.y == row
+    ) {
+        value = (
+            <input
+                value={props.cellValue}
+                onInput={(ev) => props.setCellValue(ev.currentTarget.value)}
+                onBlur={props.updateCell}
+                autoFocus
+            />
+        );
+    } else if (typeof cellData === 'object') {
+        if ('src' in cellData) {
+            value = computeFormula(cellData, data);
+        } else {
+            value = <LineChart data={data} selection={cellData.selection} />;
+        }
+    } else {
+        value = cellData;
     }
 
     return (
@@ -31,18 +48,7 @@ export default function Cell({ data, col, row, ...props }: CellProps) {
             onClick={() => props.handleClick({ x: col, y: row })}
             className={`${props.selection && inSelection({ x: col, y: row }, props.selection) && 'selected'}`}
         >
-            {props.editingPos &&
-            props.editingPos.x === col &&
-            props.editingPos.y === row ? (
-                <input
-                    value={props.cellValue}
-                    onInput={(ev) => props.setCellValue(ev.currentTarget.value)}
-                    onBlur={props.updateCell}
-                    autoFocus
-                />
-            ) : (
-                value
-            )}
+            {value}
         </td>
     );
 }
