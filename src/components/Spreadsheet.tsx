@@ -289,7 +289,7 @@ export default function Spreadsheet(props: SpreadsheetProps) {
                         </td>
                         {Array.from({ length: props.width }, (_, col) => (
                             <Cell
-                                key={col}
+                                key={`${row}-${col}`}
                                 row={row}
                                 col={col}
                                 data={data}
